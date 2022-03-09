@@ -3,7 +3,7 @@
 const STATE_TITLESCREEN = 1,
       STATE_RUNGAME = 2;
 
-var canvas, engine, scene, camera, currentState;
+var canvas, engine, scene, camera, currentState, controlEnabled;
 
 function showTitlescreen() {
     let tsElem = document.createElement("h1");
@@ -41,15 +41,42 @@ function startGame() {
     document.body.appendChild(canvas);
 
     engine = new BABYLON.Engine(canvas, false);
-    scene = new BABYLON.Scene(engine);
-    const alpha = Math.PI;
-    const beta = 2.23;
-    const radius = 2;
-    camera = new BABYLON.ArcRotateCamera("Camera", alpha, beta, radius, BABYLON.Vector3.Zero(), scene);
-    camera.attachControl(canvas, true);
+    engine.inputElement = canvas;
+    window.addEventListener('resize', function () {
+        engine.resize();
+    });
 
+    canvas.addEventListener("click", function () {
+        engine.enterPointerlock();
+    });
+
+    scene = new BABYLON.Scene(engine);
+    scene.collisionsEnabled = true;
     var light = new BABYLON.HemisphericLight("Light1", new BABYLON.Vector3(1, 1, 0), scene);
     var sphere = BABYLON.MeshBuilder.CreateSphere("Sphere", { diameter: 1 }, scene);
+
+
+    var setupCamera = function () {
+        camera = new BABYLON.FreeCamera('FPSCamera', new BABYLON.Vector3(1, 1, 0), scene);
+        camera.checkCollisions = true;
+        camera.fov = 0.80;
+        camera.speed = 1;        
+        camera.inertia = 0;        
+        camera.invertRotation = false;
+        camera.angularSensibility = 3000;
+        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.attachControl();
+    
+        // AZERTY
+        camera.keysUp = [90];
+        camera.keysLeft = [81];
+        camera.keysRight = [68];
+        camera.keysDown = [83];
+        camera.keysUpward = [32]; // space
+        camera.keysDownward = [17]; // ctrl
+    };
+
+    setupCamera();
 
     // debugger
     const F12KEY = 123;
