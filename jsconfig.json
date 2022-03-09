@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es2020",
+        "jsx": "preserve",
+        "checkJs": true,
+        "strictFunctionTypes": true,
+        "paths": {
+            ".": ["./*.js"]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ],
+    "include": [
+        "**/*.js"
+    ],
+    "files": [ "./babylon.d.ts" ]
+}
