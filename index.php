@@ -10,7 +10,7 @@
     <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            startGame();
+            startBeginRun();
         });
     </script>
 </body>

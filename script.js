@@ -3,7 +3,7 @@
 const STATE_TITLESCREEN = 1,
       STATE_RUNGAME = 2;
 
-var canvas, engine, scene, camera, currentState, controlEnabled;
+var canvas, engine, scene, camera, currentState, controlEnabled, bulletCounter = 0, bulletMaterial, bullets = [];
 
 function showTitlescreen() {
     let tsElem = document.createElement("h1");
@@ -25,7 +25,7 @@ function showTitlescreen() {
     }, 2000);
 }
 
-function startGame() {
+function startBeginRun() {
     if (!BABYLON.Engine.isSupported()) {
         alert("Babylon ne marche pas ici.");
     } else {
@@ -78,6 +78,62 @@ function startGame() {
         camera.keysDownward = [17]; // ctrl
     };
 
+    var getForwardVector = function (rotation) {
+        var rotationMatrix = BABYLON.Matrix.RotationYawPitchRoll(rotation.y, rotation.x, rotation.z);
+        return BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(0, 0, 1), rotationMatrix);
+    };
+
+    bulletMaterial = new BABYLON.StandardMaterial("BulletMateriel", scene);
+    bulletMaterial.alpha = 0.5;
+    bulletMaterial.wireframe = true;
+    const BULLET_FRAMES_ALIVE = 100;
+    var Bullet = function () {
+        bullets.push(this);
+
+        bulletCounter++;
+        this.mesh = BABYLON.Mesh.CreateSphere("Bullet" + bulletCounter, 3, 3, scene);
+        this.mesh.material = bulletMaterial;
+        this.mesh.position = camera.position.clone();
+        this.mesh.checkCollisions = true;
+        this.scene = scene;
+        this.speed = 2;
+        this.isAlive = true;
+        this.frameCnt = BULLET_FRAMES_ALIVE;
+
+        this.direction = getForwardVector(camera.rotation);
+        this.direction.normalize();
+
+        this.update = function () {
+            if (!this.isAlive) {
+                return;
+            }
+            
+            this.mesh.position.x += this.direction.x * this.speed;
+            this.mesh.position.y += this.direction.y * this.speed;
+            this.mesh.position.z += this.direction.z * this.speed;
+
+            // Cassé
+            // if (this.mesh.intersectsMesh(sphere, false)) {
+            //     //this.remove();
+            //     console.log("HIT SPHERE");
+            //     // const SPHERE_HIT_REDUCE = 0.1;
+            //     // sphere.scaling.x -= SPHERE_HIT_REDUCE;
+            //     // sphere.scaling.y -= SPHERE_HIT_REDUCE;
+            //     // sphere.scaling.z -= SPHERE_HIT_REDUCE;
+            // }
+
+            this.frameCnt--;
+            if (this.frameCnt <= 0) {
+                this.remove();
+            }
+        };
+
+        this.remove = function () {
+            this.mesh.dispose();
+            this.isAlive = false;
+        };
+    };
+
     setupCamera();
 
     // debugger
@@ -92,12 +148,23 @@ function startGame() {
         }
     });
 
+    document.addEventListener("click", function () {
+        let bullet = new Bullet();
+        console.log("Pan");
+    });
+
     // main loop
     engine.runRenderLoop(function () {
         if (currentState == STATE_TITLESCREEN) {
             showTitlescreen();
             currentState = STATE_RUNGAME;
         } else if (currentState == STATE_RUNGAME) {
+            for (let i = 0; i < bullets.length; i++) {
+                if (bullets[i].isAlive) {
+                    bullets[i].update();
+                }
+            }
+
             scene.render();
         }
     });
