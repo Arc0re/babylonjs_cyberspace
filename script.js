@@ -3,6 +3,9 @@
 const STATE_TITLESCREEN = 1,
       STATE_RUNGAME = 2;
 
+const BULLET_FRAMES_ALIVE = 100,
+      BULLET_SPEED = 2;
+
 var canvas, engine, scene, camera, currentState, controlEnabled, bulletCounter = 0, bulletMaterial, bullets = [];
 
 function showTitlescreen() {
@@ -57,6 +60,7 @@ function startBeginRun() {
     var material = new BABYLON.StandardMaterial("material01", scene);
     sphere.material = material;
     sphere.material.wireframe = true;
+    sphere.checkCollisions = true;
 
     var setupCamera = function () {
         camera = new BABYLON.FreeCamera('FPSCamera', new BABYLON.Vector3(1, 1, 0), scene);
@@ -86,7 +90,6 @@ function startBeginRun() {
     bulletMaterial = new BABYLON.StandardMaterial("BulletMateriel", scene);
     bulletMaterial.alpha = 0.5;
     bulletMaterial.wireframe = true;
-    const BULLET_FRAMES_ALIVE = 100;
     var Bullet = function () {
         bullets.push(this);
 
@@ -96,7 +99,7 @@ function startBeginRun() {
         this.mesh.position = camera.position.clone();
         this.mesh.checkCollisions = true;
         this.scene = scene;
-        this.speed = 2;
+        this.speed = BULLET_SPEED;
         this.isAlive = true;
         this.frameCnt = BULLET_FRAMES_ALIVE;
 
@@ -112,15 +115,17 @@ function startBeginRun() {
             this.mesh.position.y += this.direction.y * this.speed;
             this.mesh.position.z += this.direction.z * this.speed;
 
-            // Cassé
-            // if (this.mesh.intersectsMesh(sphere, false)) {
-            //     //this.remove();
-            //     console.log("HIT SPHERE");
-            //     // const SPHERE_HIT_REDUCE = 0.1;
-            //     // sphere.scaling.x -= SPHERE_HIT_REDUCE;
-            //     // sphere.scaling.y -= SPHERE_HIT_REDUCE;
-            //     // sphere.scaling.z -= SPHERE_HIT_REDUCE;
-            // }
+            // Cassé, blem de taille de mesh
+            if (this.mesh.intersectsMesh(sphere, false)) {
+                console.log("HIT SPHERE");
+                const SPHERE_HIT_REDUCE = 0.05;
+                sphere.scaling.x -= SPHERE_HIT_REDUCE;
+                sphere.scaling.y -= SPHERE_HIT_REDUCE;
+                sphere.scaling.z -= SPHERE_HIT_REDUCE;
+                setTimeout(() => {
+                    this.remove();
+                }, 500);
+            }
 
             this.frameCnt--;
             if (this.frameCnt <= 0) {
