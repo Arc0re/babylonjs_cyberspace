@@ -54,7 +54,9 @@ function startGame() {
     scene.collisionsEnabled = true;
     var light = new BABYLON.HemisphericLight("Light1", new BABYLON.Vector3(1, 1, 0), scene);
     var sphere = BABYLON.MeshBuilder.CreateSphere("Sphere", { diameter: 1 }, scene);
-
+    var material = new BABYLON.StandardMaterial("material01", scene);
+    sphere.material = material;
+    sphere.material.wireframe = true;
 
     var setupCamera = function () {
         camera = new BABYLON.FreeCamera('FPSCamera', new BABYLON.Vector3(1, 1, 0), scene);
@@ -68,10 +70,10 @@ function startGame() {
         camera.attachControl();
     
         // AZERTY
-        camera.keysUp = [90];
-        camera.keysLeft = [81];
-        camera.keysRight = [68];
-        camera.keysDown = [83];
+        camera.keysUp = [90]; // Z
+        camera.keysLeft = [81]; // Q
+        camera.keysRight = [68]; // S
+        camera.keysDown = [83]; // D
         camera.keysUpward = [32]; // space
         camera.keysDownward = [17]; // ctrl
     };
